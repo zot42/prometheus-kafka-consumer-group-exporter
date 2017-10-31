@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -81,7 +82,11 @@ func main() {
 		)
 		prometheus.DefaultRegisterer.MustRegister(collector)
 
-		log.Fatal(http.ListenAndServe(c.String("listen"), promhttp.Handler()))
+		l, err := net.Listen("tcp4", c.String("listen"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Fatal(http.Serve(l, promhttp.Handler()))
 	}
 
 	err := app.Run(os.Args)
